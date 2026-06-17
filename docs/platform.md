@@ -5,17 +5,17 @@
 - `platform-security`: `4.0.0`
 - `platform-integrations`: `4.0.0`
 
-Gradle은 GitHub Packages에서 아래 BOM과 starter를 소비합니다.
-- `io.github.jho951.platform:platform-runtime-bom:4.0.0`
-- `io.github.jho951.platform:platform-governance-bom:4.0.0`
-- `io.github.jho951.platform:platform-governance-starter`
-- `io.github.jho951.platform:platform-security-bom:4.0.0`
-- `io.github.jho951.platform:platform-security-starter`
-- `io.github.jho951.platform:platform-security-web-api`
-- `io.github.jho951.platform:platform-security-governance-bridge:4.0.0`
+Gradle은 `platform-packages` GitHub Packages repository에서 아래 BOM과 starter를 소비합니다.
+- `io.github.jho951.platform.packages:platform-runtime-bom:4.0.0`
+- `io.github.jho951.platform.packages:platform-governance-bom:4.0.0`
+- `io.github.jho951.platform.packages:platform-governance-starter`
+- `io.github.jho951.platform.packages:platform-security-bom:4.0.0`
+- `io.github.jho951.platform.packages:platform-security-starter`
+- `io.github.jho951.platform.packages:platform-security-web-api`
+- `io.github.jho951.platform.packages:platform-security-governance-bridge:4.0.0`
 
 ## GitHub Packages
-root `settings.gradle`의 `dependencyResolutionManagement`는 `platform-governance`, `platform-security`, `platform-integrations` GitHub Packages repository를 등록합니다. Project-level repository 선언은 `RepositoriesMode.FAIL_ON_PROJECT_REPOS`로 막습니다.
+root `settings.gradle`의 `dependencyResolutionManagement`는 Maven Central과 `https://maven.pkg.github.com/jho951/platform-packages` GitHub Packages repository를 등록합니다. Project-level repository 선언은 `RepositoriesMode.FAIL_ON_PROJECT_REPOS`로 막습니다.
 
 인증 우선순위:
 1. Gradle property `githubPackagesUsername`, `githubPackagesToken`
@@ -71,3 +71,19 @@ authz-service는 platform-governance로 control-plane 정책 검사를 등록합
 기대 버전:
 - `platform-security-starter:4.0.0`
 - `platform-governance-starter:4.0.0`
+
+## Platform 4.0.0 현재 적용 요약
+
+- 현재 `authz-service`는 `platform-runtime-bom 4.0.0`, `platform-security-starter`, `platform-governance-starter`를 기준으로 동작합니다.
+- sanctioned add-on은 `platform-security-web-api`, `platform-security-governance-bridge`입니다.
+- 현재 서비스 구현이 직접 제공하거나 강하게 의존하는 핵심 지점은 platform-owned internal auth flow, `PlatformRateLimitPort`, `GovernanceAuditSink`입니다.
+- mainline compile contract에서는 raw policy engine 좌표나 raw audit sink를 서비스 public surface로 설명하지 않습니다.
+
+## 검증
+
+```bash
+./gradlew :common:compileJava :app:compileJava
+./gradlew -q :app:dependencyInsight --configuration runtimeClasspath --dependency platform-security-starter
+./gradlew -q :app:dependencyInsight --configuration runtimeClasspath --dependency platform-governance-starter
+./gradlew -q :app:dependencyInsight --configuration runtimeClasspath --dependency platform-security-web-api
+```
